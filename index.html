@@ -55,5 +55,42 @@
         </div>
       </div>
     </header>
+
+    <main class="p-4 space-y-6 relative z-0">
+      <div
+        id="toast-feedback"
+        class="hidden fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-full shadow-2xl z-50 font-bold animate-bounce text-center w-max"
+      >
+        ✅ Dados Salvos!
+      </div>
+
+      <div
+        id="status-jogo"
+        class="hidden text-center text-xs font-bold uppercase tracking-widest text-gray-400 mb-2"
+      ></div>
+
+      <section>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="font-bold text-gray-700">Escalação</h2>
+          <span
+            id="contador-presenca"
+            class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full font-bold"
+          >
+            0 / 0
+          </span>
+        </div>
+
+        <div id="lista-jogadores" class="space-y-3">
+          <p class="text-center text-gray-400 py-4">Carregando...</p>
+        </div>
+      </section>
+
+      <button
+        onclick="abrirModalCadastro()"
+        class="fixed bottom-6 right-6 bg-blue-600 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl hover:bg-blue-700 transition-transform active:scale-95 z-20"
+      >
+        +
+      </button>
+    </main>
   </body>
 </html>
