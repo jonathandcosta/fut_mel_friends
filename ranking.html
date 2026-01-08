@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Ranking Pelada SAMU 🏆</title>
+  </head>
+  <body class="bg-gray-900 min-h-screen pb-20 text-gray-100">
+    <header
+      class="bg-gray-800 p-6 shadow-lg rounded-b-3xl border-b border-gray-700 sticky top-0 z-10"
+    >
+      <div class="flex justify-between items-center">
+        <div>
+          <h1 class="text-2xl font-bold text-yellow-400">Ranking 2026 🏆</h1>
+          <p class="text-gray-400 text-xs mt-1" id="total-jogos-label">
+            Carregando estatísticas...
+          </p>
+        </div>
+        <a
+          href="index.html"
+          class="bg-gray-700 p-2 rounded-full hover:bg-gray-600 transition"
+        >
+          🔙
+        </a>
+      </div>
+
+      <div class="flex gap-2 mt-6 overflow-x-auto pb-2 scrollbar-hide">
+        <button
+          onclick="mudarTab('gols')"
+          id="btn-gols"
+          class="tab-btn bg-yellow-500 text-gray-900 px-4 py-1 rounded-full text-sm font-bold whitespace-nowrap active"
+        >
+          ⚽ Artilharia
+        </button>
+        <button
+          onclick="mudarTab('assist')"
+          id="btn-assist"
+          class="tab-btn bg-gray-700 text-gray-300 px-4 py-1 rounded-full text-sm font-bold whitespace-nowrap"
+        >
+          👟 Garçom
+        </button>
+        <button
+          onclick="mudarTab('presenca')"
+          id="btn-presenca"
+          class="tab-btn bg-gray-700 text-gray-300 px-4 py-1 rounded-full text-sm font-bold whitespace-nowrap"
+        >
+          📅 Assiduidade
+        </button>
+        <button
+          onclick="mudarTab('destaques')"
+          id="btn-destaques"
+          class="tab-btn bg-gray-700 text-gray-300 px-4 py-1 rounded-full text-sm font-bold whitespace-nowrap"
+        >
+          🔥 Destaques
+        </button>
+      </div>
+    </header>
+  </body>
+</html>
