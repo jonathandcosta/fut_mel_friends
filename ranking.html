@@ -18,19 +18,25 @@
             Carregando estatísticas...
           </p>
         </div>
-        <!-- <a
+        <a
           href="index.html"
           class="bg-gray-700 p-2 rounded-full hover:bg-gray-600 transition"
+          >🔙</a
         >
-          🔙
-        </a> -->
       </div>
 
       <div class="flex gap-2 mt-6 overflow-x-auto pb-2 scrollbar-hide">
         <button
+          onclick="mudarTab('times')"
+          id="btn-times"
+          class="tab-btn bg-yellow-500 text-gray-900 px-4 py-1 rounded-full text-sm font-bold whitespace-nowrap active shadow-lg scale-105"
+        >
+          🏆 Times
+        </button>
+        <button
           onclick="mudarTab('gols')"
           id="btn-gols"
-          class="tab-btn bg-yellow-500 text-gray-900 px-4 py-1 rounded-full text-sm font-bold whitespace-nowrap active"
+          class="tab-btn bg-gray-700 text-gray-300 px-4 py-1 rounded-full text-sm font-bold whitespace-nowrap"
         >
           ⚽ Artilharia
         </button>
@@ -60,15 +66,9 @@
 
     <main class="p-4 max-w-md mx-auto">
       <div id="lista-ranking" class="space-y-3">
-        <div class="animate-pulse flex space-x-4">
-          <div class="flex-1 space-y-4 py-1">
-            <div class="h-4 bg-gray-700 rounded w-3/4"></div>
-            <div class="space-y-2">
-              <div class="h-4 bg-gray-700 rounded"></div>
-              <div class="h-4 bg-gray-700 rounded w-5/6"></div>
-            </div>
-          </div>
-        </div>
+        <p class="text-center text-gray-500 animate-pulse">
+          Calculando pontos...
+        </p>
       </div>
     </main>
 
@@ -78,7 +78,6 @@
     <script src="js/config.js"></script>
     <script src="js/ranking.js"></script>
     <style>
-      /* Esconder scrollbar horizontal */
       .scrollbar-hide::-webkit-scrollbar {
         display: none;
       }

@@ -1,13 +1,18 @@
-// === VARIÁVEIS GLOBAIS ===
 let listaJogadoresLocal = [];
 let rosterBase = [];
+// Objeto para guardar o placar
+let placarAtual = {
+  az_am: { a: "", b: "" }, // Azul x Amarelo
+  az_vd: { a: "", b: "" }, // Azul x Verde
+  vd_am: { a: "", b: "" }, // Verde x Amarelo
+};
 
 const listaContainer = document.getElementById("lista-jogadores");
 const contadorPresenca = document.getElementById("contador-presenca");
 const inputData = document.getElementById("data-partida");
 const statusJogo = document.getElementById("status-jogo");
 
-// === 1. INICIALIZAÇÃO ===
+// INICIALIZAÇÃO
 function definirProximoSabado() {
   const hoje = new Date();
   const diaSemana = hoje.getDay();
@@ -21,13 +26,11 @@ function navegarData(dias) {
   const dataAtual = new Date(inputData.value);
   dataAtual.setDate(dataAtual.getDate() + dias);
   inputData.value = dataAtual.toISOString().split("T")[0];
-  carregarDadosDaPartida(); // Força recarregar ao clicar nas setinhas
+  carregarDadosDaPartida();
 }
 
 async function iniciarSistema() {
   definirProximoSabado();
-
-  // Carrega o Cadastro Geral e chama a partida
   db.collection("jogadores")
     .orderBy("nome")
     .onSnapshot((snapshot) => {
@@ -39,25 +42,20 @@ async function iniciarSistema() {
     });
 }
 
-// === 2. LÓGICA CENTRAL: CARREGAR E SINCRONIZAR ===
-
-// Função que garante que ninguém fique de fora
+// CARREGAMENTO DE DADOS
 function sincronizarComCadastro(listaCarregada) {
   const listaAtualizada = [];
-
   rosterBase.forEach((jogadorBase) => {
-    // Procura se o jogador já tem dados na lista carregada (do banco ou rascunho)
     const jogadorExistente = listaCarregada.find(
       (j) => j.id === jogadorBase.id
     );
-
     if (jogadorExistente) {
-      // Mantém os dados (gols, presença), mas atualiza nome/tipo do cadastro
       jogadorExistente.nome = jogadorBase.nome;
       jogadorExistente.tipo = jogadorBase.tipo;
+      // Garante que a propriedade 'times' exista (migração de dados antigos)
+      if (!jogadorExistente.times) jogadorExistente.times = [];
       listaAtualizada.push(jogadorExistente);
     } else {
-      // Se não tem dados (jogador novo ou lista vazia), cria zerado
       listaAtualizada.push(criarObjetoJogador(jogadorBase));
     }
   });
@@ -74,6 +72,7 @@ function criarObjetoJogador(base) {
     assist: 0,
     bolaCheia: false,
     bolaMurcha: false,
+    times: [], // Novo array de times
   };
 }
 
@@ -83,33 +82,36 @@ async function carregarDadosDaPartida() {
     '<p class="text-center text-gray-400 py-4">Buscando...</p>';
 
   let dadosParaRenderizar = [];
-  let fonte = "novo";
+  let placarParaRenderizar = null; // Placar temporário
 
-  // 1. Verifica Rascunho Local
+  // 1. Rascunho Local
   const rascunho = localStorage.getItem(`pelada_${dataSelecionada}`);
+  const rascunhoPlacar = localStorage.getItem(`placar_${dataSelecionada}`);
 
   if (rascunho) {
     dadosParaRenderizar = JSON.parse(rascunho);
-    fonte = "rascunho";
-    statusJogo.innerHTML = "⚠️ Rascunho não salvo";
+    if (rascunhoPlacar) placarParaRenderizar = JSON.parse(rascunhoPlacar);
+
+    statusJogo.innerHTML = "⚠️ Rascunho";
     statusJogo.className =
       "text-center text-xs font-bold uppercase tracking-widest text-yellow-600 mb-2 block";
   } else {
-    // 2. Verifica Banco de Dados
+    // 2. Banco de Dados
     try {
       const docRef = db.collection("partidas").doc(dataSelecionada);
       const docSnap = await docRef.get();
 
       if (docSnap.exists) {
-        dadosParaRenderizar = docSnap.data().jogadores;
-        fonte = "banco";
-        statusJogo.innerHTML = "✅ Jogo Salvo no Banco";
+        const dadosBanco = docSnap.data();
+        dadosParaRenderizar = dadosBanco.jogadores;
+        placarParaRenderizar = dadosBanco.placar; // Carrega placar do banco
+
+        statusJogo.innerHTML = "✅ Jogo Salvo";
         statusJogo.className =
           "text-center text-xs font-bold uppercase tracking-widest text-green-600 mb-2 block";
       } else {
-        // Se não tem rascunho e não tem banco, é lista nova (vazia)
         dadosParaRenderizar = [];
-        fonte = "novo";
+        placarParaRenderizar = null; // Jogo novo = placar zerado
         statusJogo.innerHTML = "✨ Nova Partida";
         statusJogo.className =
           "text-center text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 block";
@@ -119,27 +121,86 @@ async function carregarDadosDaPartida() {
     }
   }
 
-  // 3. O PULO DO GATO: Sincroniza sempre
-  // Se dadosParaRenderizar vier vazio (novo jogo), o sync preenche com todo mundo zerado.
-  // Se vier com dados (banco/rascunho), o sync mantem os gols e adiciona novos jogadores.
+  // Sincroniza Listas
   listaJogadoresLocal = sincronizarComCadastro(dadosParaRenderizar);
 
+  // Sincroniza Placar (ou zera se não tiver)
+  if (placarParaRenderizar) {
+    placarAtual = placarParaRenderizar;
+  } else {
+    placarAtual = {
+      az_am: { a: "", b: "" },
+      az_vd: { a: "", b: "" },
+      vd_am: { a: "", b: "" },
+    };
+  }
+
   renderizarLista();
+  renderizarPlacar();
+}
+
+// Renderiza os valores nos inputs do placar
+function renderizarPlacar() {
+  document.getElementById("placar-az-am-1").value = placarAtual.az_am.a;
+  document.getElementById("placar-az-am-2").value = placarAtual.az_am.b;
+
+  document.getElementById("placar-az-vd-1").value = placarAtual.az_vd.a;
+  document.getElementById("placar-az-vd-2").value = placarAtual.az_vd.b;
+
+  document.getElementById("placar-vd-am-1").value = placarAtual.vd_am.a;
+  document.getElementById("placar-vd-am-2").value = placarAtual.vd_am.b;
 }
 
 function salvarRascunhoLocal() {
   const dataSelecionada = inputData.value;
+
+  // Atualiza objeto de placar com o que está nos inputs
+  placarAtual = {
+    az_am: {
+      a: document.getElementById("placar-az-am-1").value,
+      b: document.getElementById("placar-az-am-2").value,
+    },
+    az_vd: {
+      a: document.getElementById("placar-az-vd-1").value,
+      b: document.getElementById("placar-az-vd-2").value,
+    },
+    vd_am: {
+      a: document.getElementById("placar-vd-am-1").value,
+      b: document.getElementById("placar-vd-am-2").value,
+    },
+  };
+
   localStorage.setItem(
     `pelada_${dataSelecionada}`,
     JSON.stringify(listaJogadoresLocal)
   );
-  statusJogo.innerHTML = "⚠️ Editando... (Não salvo)";
+  localStorage.setItem(
+    `placar_${dataSelecionada}`,
+    JSON.stringify(placarAtual)
+  ); // Salva placar tb
+
+  statusJogo.innerHTML = "⚠️ Editando...";
   statusJogo.className =
     "text-center text-xs font-bold uppercase tracking-widest text-yellow-600 mb-2 block";
 }
 
 function salvarDadosPartida() {
   const dataSelecionada = inputData.value;
+  // Garante que o objeto placar esteja atualizado antes de enviar
+  placarAtual = {
+    az_am: {
+      a: document.getElementById("placar-az-am-1").value,
+      b: document.getElementById("placar-az-am-2").value,
+    },
+    az_vd: {
+      a: document.getElementById("placar-az-vd-1").value,
+      b: document.getElementById("placar-az-vd-2").value,
+    },
+    vd_am: {
+      a: document.getElementById("placar-vd-am-1").value,
+      b: document.getElementById("placar-vd-am-2").value,
+    },
+  };
 
   db.collection("partidas")
     .doc(dataSelecionada)
@@ -147,18 +208,17 @@ function salvarDadosPartida() {
       data: dataSelecionada,
       local: "Campo da SAMU",
       jogadores: listaJogadoresLocal,
+      placar: placarAtual, // SALVA O PLACAR NO BANCO
       ultimaAtualizacao: new Date(),
     })
     .then(() => {
-      // Limpa o rascunho local
       localStorage.removeItem(`pelada_${dataSelecionada}`);
+      localStorage.removeItem(`placar_${dataSelecionada}`);
 
-      // Atualiza status visual
-      statusJogo.innerHTML = "✅ Jogo Salvo no Banco";
+      statusJogo.innerHTML = "✅ Jogo Salvo";
       statusJogo.className =
         "text-center text-xs font-bold uppercase tracking-widest text-green-600 mb-2 block";
 
-      // Toast
       const toast = document.getElementById("toast-feedback");
       toast.classList.remove("hidden");
       setTimeout(() => {
@@ -166,12 +226,11 @@ function salvarDadosPartida() {
       }, 3000);
     })
     .catch((error) => {
-      alert("Erro ao salvar! Verifique a internet.");
-      console.error(error);
+      alert("Erro ao salvar!");
     });
 }
 
-// === 3. AÇÕES DA LISTA ===
+// AÇÕES DA LISTA
 function togglePresenca(id) {
   const jogador = listaJogadoresLocal.find((j) => j.id === id);
   if (jogador) {
@@ -204,75 +263,24 @@ function toggleDestaque(id, tipo) {
   }
 }
 
-// === 4. CADASTRO E EDIÇÃO ===
-function abrirModalCadastro() {
-  document.getElementById("modal-cadastro").classList.remove("hidden");
-}
-
-function fecharModais() {
-  document.getElementById("modal-cadastro").classList.add("hidden");
-  document.getElementById("modal-editar").classList.add("hidden");
-}
-
-function confirmarCadastro() {
-  const nome = document.getElementById("input-nome-novo").value;
-  const tipo = document.querySelector('input[name="tipo-novo"]:checked').value;
-
-  if (!nome) return alert("Digite o nome");
-  const nomeFormatado = nome
-    .toLowerCase()
-    .split(" ")
-    .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
-    .join(" ");
-
-  if (rosterBase.some((j) => j.nome === nomeFormatado))
-    return alert("Já existe!");
-
-  db.collection("jogadores")
-    .add({
-      nome: nomeFormatado,
-      tipo: tipo,
-      dataCriacao: new Date(),
-    })
-    .then(() => {
-      fecharModais();
-      document.getElementById("input-nome-novo").value = "";
-    });
-}
-
-function abrirEditar(id) {
+// NOVA FUNÇÃO: Toggle Time (Azul, Amarelo, Verde)
+function toggleTime(id, cor) {
   const jogador = listaJogadoresLocal.find((j) => j.id === id);
-  if (!jogador) return;
+  if (jogador) {
+    if (!jogador.times) jogador.times = [];
 
-  document.getElementById("edit-id").value = jogador.id;
-  document.getElementById("edit-nome").value = jogador.nome;
-
-  const radios = document.getElementsByName("edit-tipo");
-  for (const radio of radios) {
-    radio.checked = radio.value === jogador.tipo;
+    // Se já tem a cor, remove. Se não tem, adiciona.
+    if (jogador.times.includes(cor)) {
+      jogador.times = jogador.times.filter((t) => t !== cor);
+    } else {
+      jogador.times.push(cor);
+    }
+    renderizarLista();
+    salvarRascunhoLocal();
   }
-  document.getElementById("modal-editar").classList.remove("hidden");
 }
 
-function salvarEdicaoJogador() {
-  const id = document.getElementById("edit-id").value;
-  const novoNome = document.getElementById("edit-nome").value;
-  const novoTipo = document.querySelector(
-    'input[name="edit-tipo"]:checked'
-  ).value;
-
-  db.collection("jogadores")
-    .doc(id)
-    .update({
-      nome: novoNome,
-      tipo: novoTipo,
-    })
-    .then(() => {
-      fecharModais();
-    });
-}
-
-// === 5. RENDERIZAÇÃO ===
+// RENDERIZAÇÃO
 function atualizarContador() {
   const total = listaJogadoresLocal.filter((j) => j.presente).length;
   contadorPresenca.innerText = `${total} / ${listaJogadoresLocal.length}`;
@@ -299,6 +307,18 @@ function renderizarLista() {
 
     card.className = `bg-white p-4 rounded-xl shadow-sm border border-gray-100 transition-all ${borda} ${destaque}`;
 
+    // Verifica quais times estão ativos para pintar as bolinhas
+    const times = jogador.times || [];
+    const azulAtivo = times.includes("azul")
+      ? "bg-blue-500 ring-2 ring-blue-300"
+      : "bg-gray-200 hover:bg-blue-200";
+    const amareloAtivo = times.includes("amarelo")
+      ? "bg-yellow-400 ring-2 ring-yellow-200"
+      : "bg-gray-200 hover:bg-yellow-100";
+    const verdeAtivo = times.includes("verde")
+      ? "bg-green-500 ring-2 ring-green-300"
+      : "bg-gray-200 hover:bg-green-200";
+
     card.innerHTML = `
                 <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center gap-3">
@@ -314,11 +334,6 @@ function renderizarLista() {
                                 <p class="font-bold text-gray-800 capitalize">${
                                   jogador.nome
                                 }</p>
-                                <button onclick="abrirEditar('${
-                                  jogador.id
-                                }')" class="text-gray-300 hover:text-blue-500">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                </button>
                             </div>
                             <span class="text-[10px] ${
                               jogador.tipo === "mensalista"
@@ -338,7 +353,21 @@ function renderizarLista() {
                   jogador.presente
                     ? `
                     <div class="animate-[fadeIn_0.3s_ease-in]">
-                        <div class="flex gap-4 mt-2 pt-2 border-t border-gray-50 mb-3">
+                        
+                        <div class="flex items-center gap-4 mb-3 mt-2 justify-center bg-gray-50 p-2 rounded-lg">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase">Jogou no:</span>
+                            <button onclick="toggleTime('${
+                              jogador.id
+                            }', 'azul')" class="w-6 h-6 rounded-full transition-all ${azulAtivo}" title="Time Azul"></button>
+                            <button onclick="toggleTime('${
+                              jogador.id
+                            }', 'amarelo')" class="w-6 h-6 rounded-full transition-all ${amareloAtivo}" title="Time Amarelo"></button>
+                            <button onclick="toggleTime('${
+                              jogador.id
+                            }', 'verde')" class="w-6 h-6 rounded-full transition-all ${verdeAtivo}" title="Time Verde"></button>
+                        </div>
+
+                        <div class="flex gap-4 border-t border-gray-100 pt-2 mb-3">
                             <div class="flex-1">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase">Gols</label>
                                 <input type="number" value="${
@@ -386,6 +415,32 @@ function renderizarLista() {
     listaContainer.appendChild(card);
   });
   atualizarContador();
+}
+
+// MODAIS E CADASTRO
+function abrirModalCadastro() {
+  document.getElementById("modal-cadastro").classList.remove("hidden");
+}
+function fecharModais() {
+  document.getElementById("modal-cadastro").classList.add("hidden");
+}
+function confirmarCadastro() {
+  const nome = document.getElementById("input-nome-novo").value;
+  const tipo = document.querySelector('input[name="tipo-novo"]:checked').value;
+  if (!nome) return alert("Digite o nome");
+  const nomeFormatado = nome
+    .toLowerCase()
+    .split(" ")
+    .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
+    .join(" ");
+  if (rosterBase.some((j) => j.nome === nomeFormatado))
+    return alert("Já existe!");
+  db.collection("jogadores")
+    .add({ nome: nomeFormatado, tipo: tipo, dataCriacao: new Date() })
+    .then(() => {
+      fecharModais();
+      document.getElementById("input-nome-novo").value = "";
+    });
 }
 
 iniciarSistema();
