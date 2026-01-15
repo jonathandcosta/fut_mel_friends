@@ -3,257 +3,431 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" href="./assets/icon/mel.svg" type="image/svg+xml" />
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <title>Pelada MEL - Registro</title>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#EF7B15", // Sua cor Laranja
+              "primary-hover": "#d96a0b", // Laranja um pouco mais escuro para hover
+              "primary-light": "#fff0e0", // Laranja bem clarinho para fundos
+            },
+          },
+        },
+      };
+    </script>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <title>Pelada SAMU - Registro</title>
   </head>
-  <body class="bg-gray-100 min-h-screen pb-24">
+  <body class="bg-gray-100 min-h-screen pb-24 font-sans">
     <header
-      class="bg-blue-600 text-white p-6 shadow-lg rounded-b-3xl relative z-10"
+      class="bg-primary text-white p-4 shadow-lg sticky top-0 z-30 rounded-b-3xl"
     >
-      <div class="flex flex-col gap-4">
-        <div class="flex justify-between items-center">
-          <h1 class="text-2xl font-bold">Pelada MEL ⚽</h1>
+      <div class="flex justify-between items-center mb-4">
+        <h1
+          class="text-xl font-black italic tracking-wide flex items-center gap-2"
+        >
+          <i class="fa-solid fa-futbol"></i> PELADA SAMU
+        </h1>
+
+        <div class="flex gap-2">
           <a
             href="ranking.html"
-            class="text-2xl bg-blue-700 p-2 rounded-lg hover:bg-blue-800 transition"
+            class="bg-white/20 hover:bg-white/30 text-white w-10 h-10 rounded-lg flex items-center justify-center transition backdrop-blur-sm"
           >
-            🏆
+            <i class="fa-solid fa-trophy"></i>
           </a>
+
           <button
             onclick="salvarDadosPartida()"
-            class="bg-white text-blue-600 px-4 py-2 rounded-lg font-bold text-sm shadow-md active:scale-95 transition-transform flex items-center gap-2 hover:bg-blue-50"
+            class="bg-white text-primary px-4 py-2 rounded-lg font-bold text-sm shadow-md active:scale-95 transition-transform flex items-center gap-2 hover:bg-gray-50"
           >
-            💾 Salvar
-          </button>
-        </div>
-
-        <div
-          class="bg-blue-700/50 p-2 rounded-xl flex items-center justify-between"
-        >
-          <button
-            onclick="navegarData(-7)"
-            class="text-blue-100 hover:text-white px-2 text-xl font-bold"
-          >
-            &laquo;
-          </button>
-
-          <div class="flex items-center gap-2 text-sm font-medium">
-            <input
-              type="date"
-              id="data-partida"
-              onchange="carregarDadosDaPartida()"
-              class="bg-transparent text-white focus:outline-none cursor-pointer text-center font-bold"
-            />
-          </div>
-
-          <button
-            onclick="navegarData(7)"
-            class="text-blue-100 hover:text-white px-2 text-xl font-bold"
-          >
-            &raquo;
+            <i class="fa-solid fa-floppy-disk"></i> Salvar
           </button>
         </div>
       </div>
-    </header>
 
-    <main class="p-4 space-y-6 relative z-0">
       <div
-        id="toast-feedback"
-        class="hidden fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-full shadow-2xl z-50 font-bold animate-bounce text-center w-max"
+        class="bg-black/10 p-2 rounded-xl flex items-center justify-between border border-white/10"
       >
-        ✅ Dados Salvos!
+        <button
+          onclick="navegarData(-7)"
+          class="w-8 h-8 flex items-center justify-center hover:bg-white/20 rounded-full font-bold text-lg transition"
+        >
+          &laquo;
+        </button>
+        <input
+          type="date"
+          id="data-partida"
+          onchange="carregarDadosDaPartida()"
+          class="bg-transparent text-white font-bold text-center outline-none cursor-pointer uppercase text-sm tracking-widest"
+        />
+        <button
+          onclick="navegarData(7)"
+          class="w-8 h-8 flex items-center justify-center hover:bg-white/20 rounded-full font-bold text-lg transition"
+        >
+          &raquo;
+        </button>
       </div>
 
       <div
         id="status-jogo"
-        class="hidden text-center text-xs font-bold uppercase tracking-widest text-gray-400 mb-2"
+        class="text-center text-[10px] font-bold uppercase tracking-widest text-white/80 mt-2 h-4"
       ></div>
+    </header>
 
-      <section class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+    <main class="p-4 space-y-6 relative z-0 max-w-lg mx-auto">
+      <div
+        id="toast"
+        class="hidden fixed top-24 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full shadow-2xl z-50 text-sm font-bold flex items-center gap-3 animate-bounce"
+      >
+        <i class="fa-solid fa-check-circle text-green-400 text-lg"></i>
+        <span>Salvo com sucesso!</span>
+      </div>
+
+      <section>
         <h2
-          class="font-bold text-gray-700 mb-3 text-sm uppercase border-b pb-2"
+          class="text-xs font-bold text-gray-500 uppercase mb-3 flex items-center gap-2 px-1"
         >
-          Placar do Dia
+          <i class="fa-solid fa-gamepad"></i> Placar dos Jogos
         </h2>
 
-        <div class="flex items-center justify-between mb-3">
-          <div class="flex items-center gap-2 w-1/3">
-            <div class="w-3 h-3 rounded-full bg-blue-500"></div>
-            <span class="text-xs font-bold text-gray-600">Azul</span>
+        <div class="space-y-3">
+          <div
+            class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+          >
+            <div
+              class="flex items-center justify-between p-2 bg-gray-50/50 border-b border-gray-100"
+            >
+              <span class="text-[10px] font-bold text-gray-400 tracking-wider"
+                >JOGO 1</span
+              >
+            </div>
+            <div class="flex items-center justify-between p-4">
+              <div class="flex flex-col items-center w-1/3">
+                <span
+                  class="font-black text-blue-600 text-xs mb-2 tracking-widest"
+                  >AZUL</span
+                >
+                <div class="flex items-center gap-2">
+                  <button
+                    onclick="diminuirGolNoJogo('az_am', 'a')"
+                    class="w-7 h-7 bg-gray-100 text-gray-500 rounded-full hover:bg-gray-200 font-bold text-sm flex items-center justify-center"
+                  >
+                    <i class="fa-solid fa-minus"></i>
+                  </button>
+                  <span
+                    id="score-az-am-a"
+                    class="text-3xl font-black text-gray-800 w-8 text-center"
+                    >0</span
+                  >
+                  <button
+                    onclick="adicionarGolNoJogo('az_am', 'a', 'azul')"
+                    class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 font-bold text-lg shadow-sm flex items-center justify-center"
+                  >
+                    <i class="fa-solid fa-plus"></i>
+                  </button>
+                </div>
+              </div>
+              <span class="text-gray-200 font-black text-2xl">X</span>
+              <div class="flex flex-col items-center w-1/3">
+                <span
+                  class="font-black text-yellow-500 text-xs mb-2 tracking-widest"
+                  >AMARELO</span
+                >
+                <div class="flex items-center gap-2">
+                  <button
+                    onclick="adicionarGolNoJogo('az_am', 'b', 'amarelo')"
+                    class="w-10 h-10 bg-yellow-100 text-yellow-600 rounded-full hover:bg-yellow-200 font-bold text-lg shadow-sm flex items-center justify-center"
+                  >
+                    <i class="fa-solid fa-plus"></i>
+                  </button>
+                  <span
+                    id="score-az-am-b"
+                    class="text-3xl font-black text-gray-800 w-8 text-center"
+                    >0</span
+                  >
+                  <button
+                    onclick="diminuirGolNoJogo('az_am', 'b')"
+                    class="w-7 h-7 bg-gray-100 text-gray-500 rounded-full hover:bg-gray-200 font-bold text-sm flex items-center justify-center"
+                  >
+                    <i class="fa-solid fa-minus"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="flex items-center gap-2">
-            <input
-              type="number"
-              id="placar-az-am-1"
-              placeholder="0"
-              class="w-10 h-8 bg-gray-100 rounded text-center font-bold outline-none focus:ring-1 focus:ring-blue-500"
-              onchange="salvarRascunhoLocal()"
-            />
-            <span class="text-gray-400 text-xs">X</span>
-            <input
-              type="number"
-              id="placar-az-am-2"
-              placeholder="0"
-              class="w-10 h-8 bg-gray-100 rounded text-center font-bold outline-none focus:ring-1 focus:ring-yellow-500"
-              onchange="salvarRascunhoLocal()"
-            />
-          </div>
-          <div class="flex items-center gap-2 w-1/3 justify-end">
-            <span class="text-xs font-bold text-gray-600">Amarelo</span>
-            <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
-          </div>
-        </div>
 
-        <div class="flex items-center justify-between mb-3">
-          <div class="flex items-center gap-2 w-1/3">
-            <div class="w-3 h-3 rounded-full bg-blue-500"></div>
-            <span class="text-xs font-bold text-gray-600">Azul</span>
+          <div
+            class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+          >
+            <div
+              class="flex items-center justify-between p-2 bg-gray-50/50 border-b border-gray-100"
+            >
+              <span class="text-[10px] font-bold text-gray-400 tracking-wider"
+                >JOGO 2</span
+              >
+            </div>
+            <div class="flex items-center justify-between p-4">
+              <div class="flex flex-col items-center w-1/3">
+                <span
+                  class="font-black text-blue-600 text-xs mb-2 tracking-widest"
+                  >AZUL</span
+                >
+                <div class="flex items-center gap-2">
+                  <button
+                    onclick="diminuirGolNoJogo('az_vd', 'a')"
+                    class="w-7 h-7 bg-gray-100 text-gray-500 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                  >
+                    <i class="fa-solid fa-minus"></i>
+                  </button>
+                  <span
+                    id="score-az-vd-a"
+                    class="text-3xl font-black text-gray-800 w-8 text-center"
+                    >0</span
+                  >
+                  <button
+                    onclick="adicionarGolNoJogo('az_vd', 'a', 'azul')"
+                    class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 flex items-center justify-center"
+                  >
+                    <i class="fa-solid fa-plus"></i>
+                  </button>
+                </div>
+              </div>
+              <span class="text-gray-200 font-black text-2xl">X</span>
+              <div class="flex flex-col items-center w-1/3">
+                <span
+                  class="font-black text-green-600 text-xs mb-2 tracking-widest"
+                  >VERDE</span
+                >
+                <div class="flex items-center gap-2">
+                  <button
+                    onclick="adicionarGolNoJogo('az_vd', 'b', 'verde')"
+                    class="w-10 h-10 bg-green-100 text-green-600 rounded-full hover:bg-green-200 flex items-center justify-center"
+                  >
+                    <i class="fa-solid fa-plus"></i>
+                  </button>
+                  <span
+                    id="score-az-vd-b"
+                    class="text-3xl font-black text-gray-800 w-8 text-center"
+                    >0</span
+                  >
+                  <button
+                    onclick="diminuirGolNoJogo('az_vd', 'b')"
+                    class="w-7 h-7 bg-gray-100 text-gray-500 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                  >
+                    <i class="fa-solid fa-minus"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="flex items-center gap-2">
-            <input
-              type="number"
-              id="placar-az-vd-1"
-              placeholder="0"
-              class="w-10 h-8 bg-gray-100 rounded text-center font-bold outline-none focus:ring-1 focus:ring-blue-500"
-              onchange="salvarRascunhoLocal()"
-            />
-            <span class="text-gray-400 text-xs">X</span>
-            <input
-              type="number"
-              id="placar-az-vd-2"
-              placeholder="0"
-              class="w-10 h-8 bg-gray-100 rounded text-center font-bold outline-none focus:ring-1 focus:ring-green-500"
-              onchange="salvarRascunhoLocal()"
-            />
-          </div>
-          <div class="flex items-center gap-2 w-1/3 justify-end">
-            <span class="text-xs font-bold text-gray-600">Verde</span>
-            <div class="w-3 h-3 rounded-full bg-green-500"></div>
-          </div>
-        </div>
 
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2 w-1/3">
-            <div class="w-3 h-3 rounded-full bg-green-500"></div>
-            <span class="text-xs font-bold text-gray-600">Verde</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <input
-              type="number"
-              id="placar-vd-am-1"
-              placeholder="0"
-              class="w-10 h-8 bg-gray-100 rounded text-center font-bold outline-none focus:ring-1 focus:ring-green-500"
-              onchange="salvarRascunhoLocal()"
-            />
-            <span class="text-gray-400 text-xs">X</span>
-            <input
-              type="number"
-              id="placar-vd-am-2"
-              placeholder="0"
-              class="w-10 h-8 bg-gray-100 rounded text-center font-bold outline-none focus:ring-1 focus:ring-yellow-500"
-              onchange="salvarRascunhoLocal()"
-            />
-          </div>
-          <div class="flex items-center gap-2 w-1/3 justify-end">
-            <span class="text-xs font-bold text-gray-600">Amarelo</span>
-            <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+          <div
+            class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+          >
+            <div
+              class="flex items-center justify-between p-2 bg-gray-50/50 border-b border-gray-100"
+            >
+              <span class="text-[10px] font-bold text-gray-400 tracking-wider"
+                >JOGO 3</span
+              >
+            </div>
+            <div class="flex items-center justify-between p-4">
+              <div class="flex flex-col items-center w-1/3">
+                <span
+                  class="font-black text-green-600 text-xs mb-2 tracking-widest"
+                  >VERDE</span
+                >
+                <div class="flex items-center gap-2">
+                  <button
+                    onclick="diminuirGolNoJogo('vd_am', 'a')"
+                    class="w-7 h-7 bg-gray-100 text-gray-500 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                  >
+                    <i class="fa-solid fa-minus"></i>
+                  </button>
+                  <span
+                    id="score-vd-am-a"
+                    class="text-3xl font-black text-gray-800 w-8 text-center"
+                    >0</span
+                  >
+                  <button
+                    onclick="adicionarGolNoJogo('vd_am', 'a', 'verde')"
+                    class="w-10 h-10 bg-green-100 text-green-600 rounded-full hover:bg-green-200 flex items-center justify-center"
+                  >
+                    <i class="fa-solid fa-plus"></i>
+                  </button>
+                </div>
+              </div>
+              <span class="text-gray-200 font-black text-2xl">X</span>
+              <div class="flex flex-col items-center w-1/3">
+                <span
+                  class="font-black text-yellow-500 text-xs mb-2 tracking-widest"
+                  >AMARELO</span
+                >
+                <div class="flex items-center gap-2">
+                  <button
+                    onclick="adicionarGolNoJogo('vd_am', 'b', 'amarelo')"
+                    class="w-10 h-10 bg-yellow-100 text-yellow-600 rounded-full hover:bg-yellow-200 flex items-center justify-center"
+                  >
+                    <i class="fa-solid fa-plus"></i>
+                  </button>
+                  <span
+                    id="score-vd-am-b"
+                    class="text-3xl font-black text-gray-800 w-8 text-center"
+                    >0</span
+                  >
+                  <button
+                    onclick="diminuirGolNoJogo('vd_am', 'b')"
+                    class="w-7 h-7 bg-gray-100 text-gray-500 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                  >
+                    <i class="fa-solid fa-minus"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
+      <hr class="border-gray-300/50" />
+
       <section>
         <div class="flex justify-between items-center mb-4">
-          <h2 class="font-bold text-gray-700">Escalação & Times</h2>
+          <h2
+            class="text-xs font-bold text-gray-500 uppercase flex items-center gap-2 px-1"
+          >
+            <i class="fa-solid fa-users"></i> Atletas Presentes
+          </h2>
           <span
             id="contador-presenca"
-            class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full font-bold"
+            class="bg-primary-light text-primary text-xs px-3 py-1 rounded-full font-bold border border-primary/20"
+            >0</span
           >
-            0 / 0
-          </span>
         </div>
 
         <div id="lista-jogadores" class="space-y-3">
-          <p class="text-center text-gray-400 py-4">Carregando...</p>
+          <p class="text-center text-gray-400 py-8 text-sm animate-pulse">
+            Carregando lista...
+          </p>
         </div>
       </section>
 
       <button
         onclick="abrirModalCadastro()"
-        class="fixed bottom-6 right-6 bg-blue-600 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl hover:bg-blue-700 transition-transform active:scale-95 z-20"
+        class="fixed bottom-6 right-6 bg-primary text-white w-14 h-14 rounded-full shadow-2xl shadow-primary/40 flex items-center justify-center text-2xl hover:bg-primary-hover transition-transform active:scale-90 z-20"
       >
-        +
+        <i class="fa-solid fa-plus"></i>
       </button>
     </main>
 
     <div
-      id="modal-cadastro"
-      class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+      id="modal-goleador"
+      class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
     >
       <div
-        class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-[bounce_0.2s_ease-out]"
+        class="bg-white rounded-2xl w-full max-w-sm overflow-hidden animate-[bounce_0.2s_ease-out]"
       >
-        <div
-          class="bg-blue-600 p-4 text-white flex justify-between items-center"
-        >
-          <h3 class="font-bold text-lg">Novo Jogador</h3>
+        <div class="p-4 border-b flex justify-between items-center bg-gray-50">
+          <h3 class="font-bold text-gray-700">
+            Quem fez o gol <span id="time-gol-label" class="uppercase"></span>?
+          </h3>
           <button
             onclick="fecharModais()"
-            class="text-blue-200 hover:text-white text-2xl"
+            class="text-gray-400 hover:text-red-500 text-xl w-8 h-8 flex items-center justify-center"
           >
-            &times;
+            <i class="fa-solid fa-times"></i>
           </button>
         </div>
-        <div class="p-6 space-y-4">
+        <div
+          id="lista-possiveis-goleadores"
+          class="p-2 max-h-60 overflow-y-auto grid grid-cols-2 gap-2"
+        ></div>
+        <div class="p-3 bg-gray-50 text-center border-t">
+          <button
+            onclick="apenasIncrementarPlacar()"
+            class="text-xs text-primary underline font-bold"
+          >
+            Ninguém (Gol Contra / Apenas Placar)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="modal-cadastro"
+      class="hidden fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-4 backdrop-blur-sm"
+    >
+      <div
+        class="bg-white rounded-2xl w-full max-w-sm overflow-hidden animate-[fadeIn_0.2s_ease-out]"
+      >
+        <div
+          class="bg-primary p-4 text-white flex justify-between items-center"
+        >
+          <h3 class="font-bold text-lg">
+            <i class="fa-solid fa-user-plus mr-2"></i> Novo Atleta
+          </h3>
+          <button
+            onclick="fecharModais()"
+            class="text-white/70 hover:text-white text-2xl"
+          >
+            <i class="fa-solid fa-times"></i>
+          </button>
+        </div>
+        <div class="p-5 space-y-4">
           <div>
-            <label class="block text-xs font-bold text-gray-500 uppercase mb-1"
+            <label class="block text-xs font-bold text-gray-400 uppercase mb-1"
               >Nome</label
             >
             <input
               type="text"
-              id="input-nome-novo"
-              class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500 capitalize"
+              id="novo-nome"
+              class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary capitalize"
+              placeholder="Ex: Romário"
             />
           </div>
-          <div>
-            <label class="block text-xs font-bold text-gray-500 uppercase mb-1"
-              >Vínculo</label
-            >
-            <div class="grid grid-cols-2 gap-3">
-              <label class="cursor-pointer">
-                <input
-                  type="radio"
-                  name="tipo-novo"
-                  value="mensalista"
-                  class="peer hidden"
-                  checked
-                />
-                <div
-                  class="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center text-gray-500 peer-checked:bg-green-100 peer-checked:text-green-700 peer-checked:border-green-500 font-bold"
-                >
-                  Mensalista
-                </div>
-              </label>
-              <label class="cursor-pointer">
-                <input
-                  type="radio"
-                  name="tipo-novo"
-                  value="avulso"
-                  class="peer hidden"
-                />
-                <div
-                  class="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center text-gray-500 peer-checked:bg-orange-100 peer-checked:text-orange-700 peer-checked:border-orange-500 font-bold"
-                >
-                  Avulso
-                </div>
-              </label>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                class="block text-xs font-bold text-gray-400 uppercase mb-1"
+                >Tipo</label
+              >
+              <select
+                id="novo-tipo"
+                class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 outline-none"
+              >
+                <option value="mensalista">Mensalista</option>
+                <option value="avulso">Avulso</option>
+              </select>
+            </div>
+            <div>
+              <label
+                class="block text-xs font-bold text-gray-400 uppercase mb-1"
+                >Time Inicial</label
+              >
+              <select
+                id="novo-time-ini"
+                class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 outline-none"
+              >
+                <option value="">Sem Time</option>
+                <option value="azul">Azul</option>
+                <option value="amarelo">Amarelo</option>
+                <option value="verde">Verde</option>
+              </select>
             </div>
           </div>
           <button
-            onclick="confirmarCadastro()"
-            class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700"
+            onclick="confirmarCadastroCompleto()"
+            class="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-primary-hover shadow-lg"
           >
-            Adicionar
+            Cadastrar
           </button>
         </div>
       </div>
@@ -261,73 +435,64 @@
 
     <div
       id="modal-editar"
-      class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+      class="hidden fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-4 backdrop-blur-sm"
     >
       <div
-        class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+        class="bg-white rounded-2xl w-full max-w-sm overflow-hidden animate-[fadeIn_0.2s_ease-out]"
       >
         <div
           class="bg-gray-800 p-4 text-white flex justify-between items-center"
         >
-          <h3 class="font-bold text-lg">Editar Jogador</h3>
+          <h3 class="font-bold">
+            <i class="fa-solid fa-user-pen mr-2"></i> Editar Atleta
+          </h3>
           <button
             onclick="fecharModais()"
             class="text-gray-400 hover:text-white text-2xl"
           >
-            &times;
+            <i class="fa-solid fa-times"></i>
           </button>
         </div>
-        <div class="p-6 space-y-4">
+        <div class="p-5 space-y-4">
           <input type="hidden" id="edit-id" />
           <div>
-            <label class="block text-xs font-bold text-gray-500 uppercase mb-1"
+            <label class="block text-xs font-bold text-gray-400 uppercase mb-1"
               >Nome</label
             >
             <input
               type="text"
               id="edit-nome"
-              class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 outline-none focus:border-gray-800 capitalize"
+              class="w-full bg-gray-50 border rounded-lg p-3 outline-none focus:border-gray-800 capitalize"
             />
           </div>
           <div>
-            <label class="block text-xs font-bold text-gray-500 uppercase mb-1"
-              >Vínculo Atual</label
+            <label class="block text-xs font-bold text-gray-400 uppercase mb-1"
+              >Vínculo</label
             >
-            <div class="grid grid-cols-2 gap-3">
-              <label class="cursor-pointer">
-                <input
-                  type="radio"
-                  name="edit-tipo"
-                  value="mensalista"
-                  class="peer hidden"
-                />
-                <div
-                  class="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center text-gray-500 peer-checked:bg-green-100 peer-checked:text-green-700 peer-checked:border-green-500 font-bold"
-                >
-                  Mensalista
-                </div>
-              </label>
-              <label class="cursor-pointer">
-                <input
-                  type="radio"
-                  name="edit-tipo"
-                  value="avulso"
-                  class="peer hidden"
-                />
-                <div
-                  class="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center text-gray-500 peer-checked:bg-orange-100 peer-checked:text-orange-700 peer-checked:border-orange-500 font-bold"
-                >
-                  Avulso
-                </div>
-              </label>
-            </div>
+            <select
+              id="edit-tipo"
+              class="w-full bg-gray-50 border rounded-lg p-3 outline-none"
+            >
+              <option value="mensalista">Mensalista</option>
+              <option value="avulso">Avulso</option>
+            </select>
           </div>
-          <button
-            onclick="salvarEdicaoJogador()"
-            class="w-full bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-900"
-          >
-            Salvar Alteração
-          </button>
+
+          <div class="flex gap-3 pt-2">
+            <button
+              onclick="salvarEdicaoJogador()"
+              class="flex-1 bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-900"
+            >
+              Salvar Alterações
+            </button>
+            <button
+              onclick="excluirJogador()"
+              class="bg-red-50 text-red-500 px-4 py-3 rounded-lg hover:bg-red-100 font-bold border border-red-100"
+              title="Excluir"
+            >
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -337,18 +502,5 @@
 
     <script src="js/config.js"></script>
     <script src="js/app.js"></script>
-
-    <style>
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(-5px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-    </style>
   </body>
 </html>
